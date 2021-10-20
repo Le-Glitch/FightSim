@@ -14,7 +14,7 @@
             "args": [],
             "cwd": "${workspaceFolder}/Caleb-Brown-TE20A-FightSim",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
-            "console": "internalConsole",
+            "console": "externalTerminal",
             "stopAtEntry": false
         },
         {
