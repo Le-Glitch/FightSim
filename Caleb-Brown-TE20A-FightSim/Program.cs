@@ -3,16 +3,19 @@ using System.IO;
 using System.Collections.Generic;
 
 int round = 1;
+int maxRound = 5;
 string fighter1 = "", fighter2 = "e";
 int hp1 = 100, hp2 = 100;
 int damage1 = 0, damage2 = 0;
 int money = 1000;
 bool simStart = false, gameStart = true;
 double doubleRand = 0f;
-double hitChance1 = 0f, hitChance2 = 0f;
+double hitChance1 = 0.75f, hitChance2 = 0.75f;
 int wager = 0;
 int damageModifier1 = 1, damageModifier2 = 1;
 ConsoleKey chooseFighter = ConsoleKey.E;
+ConsoleKey endGame = ConsoleKey.E;
+ConsoleKey bet = ConsoleKey.E;
 int minDmg1 = 5, minDmg2 = 5, maxDmg1 = 25, maxDmg2 = 25;
 
 int nameChoice1 = 0, nameChoice2 = 0, nameChoice3 = 0;
@@ -42,14 +45,53 @@ while (simStart == true)
     goto nextRound;
 }
 
+if (round > maxRound)
+{
+    while (endGame != ConsoleKey.Enter && endGame != ConsoleKey.Escape)
+    {
+        Console.Clear();
+        if (round == 6)
+        {
+            Console.WriteLine("You have completed the first 5 rounds");
+        }
+        else
+        {
+            Console.WriteLine("You have completed another 5 rounds");
+        }
+
+        Console.WriteLine("Press ENTER if you wish to continue playing or ESC if you wish to end the game");
+
+        endGame = Console.ReadKey().Key;
+        if (endGame == ConsoleKey.Enter)
+        {
+            maxRound += 5;
+            gameStart = true;
+            goto nextRound;
+        }
+    }
+
+}
+
 void Start()
 {
+
+    //Lets the player choose their characters name within certain parameters
     while (fighter1 == "" || fighter1.Length > 16)
     {
         Console.Clear();
         Console.WriteLine("Choose your figher's name");
+        if (fighter1.Length > 16)
+        {
+            Console.WriteLine("Your fighter's name cannot be longer than 16 characters");
+        }
         fighter1 = Console.ReadLine();
     }
+
+
+    //generates random names to pick for opponent
+    nameChoice1 = generator.Next(0, names.Length);
+    nameChoice2 = generator.Next(0, names.Length);
+    nameChoice3 = generator.Next(0, names.Length);
 
     while (nameChoice1 == nameChoice2 || nameChoice1 == nameChoice3 || nameChoice2 == nameChoice3)
     {
@@ -58,6 +100,7 @@ void Start()
         nameChoice3 = generator.Next(0, names.Length);
     }
 
+    //Gives the player a choice between 3 different names for the opponent
     while (chooseFighter != ConsoleKey.D1 && chooseFighter != ConsoleKey.D2 && chooseFighter != ConsoleKey.D3)
     {
         Console.Clear();
@@ -84,6 +127,28 @@ void Start()
     }
 
 
+    //Betting on which fighter will win
+    while (wager <= money && bet != ConsoleKey.D1 && bet != ConsoleKey.D2)
+    {
+        Console.Clear();
+        Console.WriteLine("You can now bet for one of the fighters");
+        Console.WriteLine("Press \"1\" to bet on your fighter or \"2\" to bet on your opponent");
+
+        bet = Console.ReadKey().Key;
+
+        if (bet == ConsoleKey.D1)
+        {
+            Console.WriteLine("Enter the amount you wish to bet");
+            wager = Convert.ToInt32(Console.ReadLine());
+        }
+        if (bet == ConsoleKey.D2)
+        {
+            Console.Clear();
+            Console.WriteLine("Enter the amount you wish to bet");
+            wager = Convert.ToInt32(Console.ReadLine()) * -1;
+        }
+    }
+
 
     chooseFighter = ConsoleKey.E;
 
@@ -93,29 +158,38 @@ void Start()
 
 void Fight()
 {
+    Console.Clear();
 
-    Console.WriteLine($"Round {round}!");
-
+    //fighting cycle that repeats to not allow you to proceed until one fighter wins or both run out of hp
     while (hp1 > 0 && hp2 > 0)
     {
         Console.Clear();
+        Console.WriteLine($"Round {round}");
+
         damage1 = generator.Next(minDmg1, maxDmg1) * damageModifier1;
         damage2 = generator.Next(minDmg2, maxDmg2) * damageModifier2;
 
 
 
         doubleRand = generator.NextDouble();
-        if (doubleRand < 0.75)
+        if (doubleRand < hitChance2)
         {
             hp1 -= damage2;
         }
+        else
+        {
+            Console.WriteLine($"{fighter2} missed");
+        }
 
         doubleRand = generator.NextDouble();
-        if (doubleRand < 0.75)
+        if (doubleRand < hitChance1)
         {
             hp2 -= damage1;
         }
-
+        else
+        {
+            Console.WriteLine($"{fighter1} missed");
+        }
 
         if (hp1 < 0)
         {
@@ -135,7 +209,7 @@ void Fight()
     }
 
 
-
+    //Different endings to the round depending on how much hp each fighter has
     if (hp1 <= 0 && hp2 <= 0)
     {
         Console.WriteLine("Draw!");
@@ -156,8 +230,11 @@ void Fight()
         Console.ReadLine();
     }
 
-    Console.WriteLine("Next round will start once you pick your next opponent");
-    Console.ReadLine();
+    if (round < maxRound)
+    {
+        Console.WriteLine("Next round will start once you pick your next opponent");
+        Console.ReadLine();
+    }
     round++;
     gameStart = true;
     simStart = false;
