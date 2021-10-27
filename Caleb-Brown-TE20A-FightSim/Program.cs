@@ -1,20 +1,21 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Threading;
 
 string fighter1 = "", fighter2 = "e";
 int round = 1;
 int maxRound = 5;
 int hp1 = 100, hp2 = 100;
 int damage1 = 0, damage2 = 0;
-int money = 1000;
-int wager = 0;
 int damageModifier1 = 1, damageModifier2 = 1;
 int minDmg1 = 5, minDmg2 = 5, maxDmg1 = 25, maxDmg2 = 25;
 int nameChoice1 = 0, nameChoice2 = 0, nameChoice3 = 0;
 int random = 0;
+int wager = 0;
 bool simStart = false, gameStart = true;
 bool intInput = false;
+double money = 500;
 double hpUpgrades = 1, dmgUpgrades = 1, accuracyUpgrades = 1;
 double hpCost = 100, dmgCost = 100, accuracyCost = 100;
 double doubleRand = 0f;
@@ -23,6 +24,7 @@ double priceMultiplier = 1.1f;
 ConsoleKey chooseFighter = ConsoleKey.E;
 ConsoleKey endGame = ConsoleKey.E;
 ConsoleKey bet = ConsoleKey.E;
+ConsoleKey upgradeChoice = ConsoleKey.E;
 
 Random generator = new Random();
 
@@ -137,6 +139,8 @@ void Start()
     //Fighter upgrades
     if (round > 1)
     {
+    upgradeStart:
+
         Console.Clear();
         priceMultiplier = 1.1f;
         hpCost *= Math.Pow(priceMultiplier, hpUpgrades);
@@ -150,13 +154,94 @@ void Start()
         accuracyCost *= Math.Pow(priceMultiplier, accuracyUpgrades);
         accuracyCost = Math.Round(accuracyCost, 0);
 
-        Console.WriteLine($"You can now upgrade {fighter1}");
-        Console.WriteLine("Press\"1\", \"2\", \"3\" or \"4\"");
-        Console.WriteLine($"1. Health {hpCost}");
-        Console.WriteLine($"2. Damage {dmgCost}");
-        Console.WriteLine($"3. Accuracy {accuracyCost}");
+        while (upgradeChoice != ConsoleKey.Enter)
+        {
+            Console.WriteLine($"You can now upgrade {fighter1}");
+            Console.WriteLine("Press \"1\", \"2\", \"3\" or ENTER to continue");
+            Console.WriteLine($"1. Health {hpCost}");
+            Console.WriteLine($"2. Damage {dmgCost}");
+            Console.WriteLine($"3. Accuracy {accuracyCost}");
+
+            upgradeChoice = Console.ReadKey().Key;
+
+            if (upgradeChoice == ConsoleKey.D1)
+            {
+                money -= hpCost;
+                hp1 += 50;
+                goto upgradeStart;
+            }
+
+            if (upgradeChoice == ConsoleKey.D2)
+            {
+                money -= dmgCost;
+                minDmg1 += 5;
+                maxDmg1 += 5;
+                goto upgradeStart;
+            }
+
+            if (upgradeChoice == ConsoleKey.D3)
+            {
+                money -= accuracyCost;
+                hitChance1 += 0.05;
+                goto upgradeStart;
+            }
+        }
     }
 
+    //Opponent upgrades
+    random = generator.Next(0, 4);
+    //hp
+    if (random == 0)
+    {
+        hp2 += 25;
+    }
+    
+    if (random == 1 || random == 2)
+    {
+        hp2 += 50;
+    }
+    
+    if(random == 3)
+    {
+        hp2 += 75;
+    }
+    
+    random = generator.Next(0, 4);
+    //damage
+    if (random == 0)
+    {
+        minDmg2 += 1;
+        maxDmg2 += 1;
+    }
+    
+    if (random == 1 || random == 2)
+    {
+        minDmg2 += 5;
+        maxDmg2 += 5;
+    }
+    
+    if (random == 3)
+    {
+        minDmg2 += 10;
+        maxDmg2 += 10;
+    }
+    
+    random = generator.Next(0, 4);
+    //hitchance
+    if (random == 0)
+    {
+        hitChance2 += 0;
+    }
+
+    if (random == 1)
+    {
+        hitChance2 += 0.1;
+    }
+    
+    if (random == 2)
+    {
+        hitChance2 += 0.5;
+    }
 
     //Betting on which fighter will win
     while (wager <= money && bet != ConsoleKey.D1 && bet != ConsoleKey.D2)
@@ -236,16 +321,17 @@ void Fight()
         }
 
         Console.WriteLine($"{fighter1} has {hp1}hp remaining");
+        Thread.Sleep(TimeSpan.FromSeconds(1));
         Console.WriteLine($"{fighter2} has {hp2}hp remaining");
 
 
-        Console.ReadLine();
+        Thread.Sleep(TimeSpan.FromSeconds(3));
     }
 
 
-    //Different endings to the round depending on how much hp each fighter has
 
-    //draw
+    //Different endings to the round depending on how much hp each fighter has
+    //Draw
     if (hp1 <= 0 && hp2 <= 0)
     {
         Console.WriteLine("Draw!");
@@ -254,7 +340,7 @@ void Fight()
         money += wager;
     }
 
-    //fighter 2 wins
+    //Fighter 2 wins
     else if (hp1 <= 0)
     {
         Console.WriteLine($"{fighter1} down");
@@ -263,7 +349,7 @@ void Fight()
         money -= wager;
     }
 
-    //fighter 1 wins
+    //Fighter 1 wins
     else if (hp2 <= 0)
     {
         Console.WriteLine($"{fighter2} down");
