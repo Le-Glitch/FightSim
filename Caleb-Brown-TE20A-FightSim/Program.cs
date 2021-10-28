@@ -187,7 +187,7 @@ void Start()
                 goto upgradeStart;
             }
         }
-        
+
         //Opponent upgrades
         random = generator.Next(0, 11);
         //hp
@@ -360,6 +360,62 @@ void Fight()
         }
 
         if (attackChoice == ConsoleKey.D5)
+        {
+            damageModifier1 += 0.5;
+            Console.WriteLine(damageModifier1);
+        }
+
+        doubleRand = generator.NextDouble();
+        
+        if(doubleRand <= 0.2)
+        {
+            damage1 = generator.Next(minDmg2, maxDmg2) + 10;
+            doubleRand = generator.NextDouble();
+            if (doubleRand < hitChance2 * 0.75)
+            {
+                hp2 -= Math.Round(damage2 * damageModifier2, 0);
+            }
+            else
+            {
+                Console.WriteLine($"{fighter2} missed!");
+            }
+        }
+        
+        if (doubleRand <= 0.4 && doubleRand > 0.4)
+        {
+            damage1 = generator.Next(minDmg2, maxDmg2);
+            doubleRand = generator.NextDouble();
+            if (doubleRand < hitChance2)
+            {
+                hp2 -= Math.Round(damage2 * damageModifier2, 0);
+            }
+            else
+            {
+                Console.WriteLine($"{fighter2} missed!");
+            }
+        }
+        
+        if (doubleRand <= 0.6 && doubleRand > 0.4)
+        {
+            damage1 = generator.Next(minDmg2, maxDmg2) -5;
+            doubleRand = generator.NextDouble();
+            if (doubleRand < hitChance2 * 1.1)
+            {
+                hp2 -= Math.Round(damage2 * damageModifier2, 0);
+            }
+            else
+            {
+                Console.WriteLine($"{fighter2} missed!");
+            }
+        }
+
+        if (doubleRand <= 0.8 && doubleRand > 0.6)
+        {
+            hitChance1 += 0.05;
+            Console.WriteLine(hitChance1);
+        }
+
+        if (doubleRand > 0.8)
         {
             damageModifier1 += 0.5;
             Console.WriteLine(damageModifier1);
