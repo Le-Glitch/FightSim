@@ -7,12 +7,14 @@ string fighter1 = "", fighter2 = "e";
 int round = 1;
 int maxRound = 5;
 int hp1 = 100, hp2 = 100;
+int maxHp1 = 100, maxHp2 = 100;
 int damage1 = 0, damage2 = 0;
 int damageModifier1 = 1, damageModifier2 = 1;
 int minDmg1 = 5, minDmg2 = 5, maxDmg1 = 25, maxDmg2 = 25;
 int nameChoice1 = 0, nameChoice2 = 0, nameChoice3 = 0;
 int random = 0;
 int wager = 0;
+int baseMinDmg = minDmg1, baseMaxDmg = maxDmg1;
 bool simStart = false, gameStart = true;
 bool intInput = false;
 double money = 500;
@@ -20,11 +22,13 @@ double hpUpgrades = 1, dmgUpgrades = 1, accuracyUpgrades = 1;
 double hpCost = 100, dmgCost = 100, accuracyCost = 100;
 double doubleRand = 0f;
 double hitChance1 = 0.75f, hitChance2 = 0.75f;
+double baseHitChance;
 double priceMultiplier = 1.1f;
 ConsoleKey chooseFighter = ConsoleKey.E;
 ConsoleKey endGame = ConsoleKey.E;
 ConsoleKey bet = ConsoleKey.E;
 ConsoleKey upgradeChoice = ConsoleKey.E;
+ConsoleKey attackChoice = ConsoleKey.E;
 
 Random generator = new Random();
 
@@ -167,7 +171,7 @@ void Start()
             if (upgradeChoice == ConsoleKey.D1)
             {
                 money -= hpCost;
-                hp1 += 50;
+                maxHp1 += 50;
                 goto upgradeStart;
             }
 
@@ -176,6 +180,8 @@ void Start()
                 money -= dmgCost;
                 minDmg1 += 5;
                 maxDmg1 += 5;
+                baseMinDmg = minDmg1;
+                baseMaxDmg = maxDmg1;
                 goto upgradeStart;
             }
 
@@ -183,64 +189,65 @@ void Start()
             {
                 money -= accuracyCost;
                 hitChance1 += 0.05;
+                baseHitChance = hitChance1;
                 goto upgradeStart;
             }
         }
     }
 
     //Opponent upgrades
-    random = generator.Next(0, 4);
+    random = generator.Next(0, 11);
     //hp
-    if (random == 0)
+    if (random >= 0 && random < 5)
     {
-        hp2 += 25;
+        maxHp2 += 25;
     }
-    
-    if (random == 1 || random == 2)
+
+    if (random >= 5 && random < 10)
     {
-        hp2 += 50;
+        maxHp2 += 50;
     }
-    
-    if(random == 3)
+
+    if (random == 10)
     {
-        hp2 += 75;
+        maxHp2 += 75;
     }
-    
-    random = generator.Next(0, 4);
+
+    random = generator.Next(0, 11);
     //damage
-    if (random == 0)
+    if (random >= 0 && random < 5)
     {
         minDmg2 += 1;
         maxDmg2 += 1;
     }
-    
-    if (random == 1 || random == 2)
+
+    if (random >= 5 && random < 10)
     {
         minDmg2 += 5;
         maxDmg2 += 5;
     }
-    
-    if (random == 3)
+
+    if (random == 10)
     {
         minDmg2 += 10;
         maxDmg2 += 10;
     }
-    
-    random = generator.Next(0, 4);
+
+    random = generator.Next(0, 11);
     //hitchance
-    if (random == 0)
+    if (random >= 0 && random < 5)
     {
-        hitChance2 += 0;
+        hitChance2 += 0.01;
     }
 
-    if (random == 1)
+    if (random >= 5 && random < 10)
+    {
+        hitChance2 += 0.05;
+    }
+
+    if (random == 10)
     {
         hitChance2 += 0.1;
-    }
-    
-    if (random == 2)
-    {
-        hitChance2 += 0.5;
     }
 
     //Betting on which fighter will win
@@ -282,12 +289,69 @@ void Fight()
     //fighting cycle that repeats to not allow you to proceed until one fighter wins or both run out of hp
     while (hp1 > 0 && hp2 > 0)
     {
+        hp1 = maxHp1;
+        hp2 = maxHp2;
         Console.Clear();
         Console.WriteLine($"Round {round}");
+        Console.WriteLine();
 
-        damage1 = generator.Next(minDmg1, maxDmg1) * damageModifier1;
-        damage2 = generator.Next(minDmg2, maxDmg2) * damageModifier2;
+        Console.WriteLine("Attacks:");
+        Console.WriteLine("1. Big Punch");
+        Console.WriteLine("High damage\n Low accuracy");
+        Console.WriteLine();
+        Console.WriteLine("2. Regular Punch");
+        Console.WriteLine("Normal damage\n Normal accuracy");
+        Console.WriteLine("3. Small Punch");
+        Console.WriteLine("Low damage\n High accuracy");
+        Console.WriteLine();
+        Console.WriteLine("4. Focus");
+        Console.WriteLine("Increase accuracy");
+        Console.WriteLine();
+        Console.WriteLine("5. Strength");
+        Console.WriteLine("Increase damage");
+        Console.WriteLine();
+        Console.WriteLine("Press \"1\", \"2\", \"3\", \"4\" or \"5\" to select a move");
 
+
+        if (attackChoice == ConsoleKey.D1)
+        {
+            damage1 = generator.Next(minDmg1, maxDmg1) + 10;
+            doubleRand = generator.NextDouble();
+            if (doubleRand < hitChance1 * 0.75)
+            {
+                hp2 -= damage1;
+            }
+        }
+
+        if (attackChoice == ConsoleKey.D2)
+        {
+            damage1 = generator.Next(minDmg1, maxDmg1);
+            doubleRand = generator.NextDouble();
+            if (doubleRand < hitChance1)
+            {
+                hp2 -= damage1;
+            }
+        }
+
+        if (attackChoice == ConsoleKey.D2)
+        {
+            damage1 = generator.Next(minDmg1, maxDmg1) - 5;
+            doubleRand = generator.NextDouble();
+            if (doubleRand < hitChance1 * 1.1)
+            {
+                hp2 -= damage1;
+            }
+        }
+
+        if (attackChoice == ConsoleKey.D4)
+        {
+
+        }
+
+        if (attackChoice == ConsoleKey.D5)
+        {
+
+        }
 
 
         doubleRand = generator.NextDouble();
@@ -367,8 +431,10 @@ void Fight()
     gameStart = true;
     simStart = false;
 
+    minDmg1 = baseMinDmg;
+    maxDmg1 = baseMaxDmg;
+    hitChance1 = baseHitChance;
 
-
-    hp1 = 100;
-    hp2 = 100;
+    hp1 = maxHp1;
+    hp2 = maxHp2;
 }
