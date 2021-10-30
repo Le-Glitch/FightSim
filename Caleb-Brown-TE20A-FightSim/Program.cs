@@ -23,6 +23,7 @@ double damageModifier1 = 1, damageModifier2 = 1;
 double hitChance1 = 0.75f, hitChance2 = 0.75f;
 double baseHitChance = hitChance1;
 double priceMultiplier = 1.1f;
+double baseCost = 100;
 ConsoleKey chooseFighter = ConsoleKey.E;
 ConsoleKey endGame = ConsoleKey.E;
 ConsoleKey bet = ConsoleKey.E;
@@ -142,25 +143,27 @@ void Start()
     upgradeStart:
 
         Console.Clear();
-        priceMultiplier = 1.1f;
-        hpCost *= Math.Pow(priceMultiplier, hpUpgrades);
-        hpCost = Math.Round(hpCost, 0);
 
-        priceMultiplier = 1.1f;
-        dmgCost *= Math.Pow(priceMultiplier, dmgUpgrades);
-        dmgCost = Math.Round(dmgCost, 0);
-
-        priceMultiplier = 1.1f;
-        accuracyCost *= Math.Pow(priceMultiplier, accuracyUpgrades);
-        accuracyCost = Math.Round(accuracyCost, 0);
-
-        while (upgradeChoice != ConsoleKey.Enter)
+        while (upgradeChoice != ConsoleKey.Enter || money < hpCost && money < dmgCost && money < accuracyCost)
         {
             Console.WriteLine($"You can now upgrade {fighter1}");
             Console.WriteLine("Press \"1\", \"2\", \"3\" or ENTER to continue");
+            hpCost = baseCost;
+            priceMultiplier = 1.1f;
+            hpCost *= Math.Pow(priceMultiplier, hpUpgrades);
+            hpCost = Math.Round(hpCost, 0);
             Console.WriteLine($"1. Health {hpCost}");
+            hpCost = baseCost;
+            priceMultiplier = 1.1f;
+            dmgCost *= Math.Pow(priceMultiplier, dmgUpgrades);
+            dmgCost = Math.Round(dmgCost, 0);
             Console.WriteLine($"2. Damage {dmgCost}");
+            hpCost = baseCost;
+            priceMultiplier = 1.1f;
+            accuracyCost *= Math.Pow(priceMultiplier, accuracyUpgrades);
+            accuracyCost = Math.Round(accuracyCost, 0);
             Console.WriteLine($"3. Accuracy {accuracyCost}");
+            Console.WriteLine($"You have ${money} remaining");
 
             upgradeChoice = Console.ReadKey().Key;
 
@@ -168,6 +171,7 @@ void Start()
             {
                 money -= hpCost;
                 maxHp1 += 50;
+                hpUpgrades += 1;
                 goto upgradeStart;
             }
 
@@ -176,6 +180,7 @@ void Start()
                 money -= dmgCost;
                 minDmg1 += 5;
                 maxDmg1 += 5;
+                dmgUpgrades += 1;
                 goto upgradeStart;
             }
 
@@ -184,6 +189,7 @@ void Start()
                 money -= accuracyCost;
                 hitChance1 += 0.05;
                 baseHitChance = hitChance1;
+                accuracyUpgrades += 1;
                 goto upgradeStart;
             }
         }
@@ -280,12 +286,12 @@ void Start()
 
 void Fight()
 {
+    hp1 = maxHp1;
+    hp2 = maxHp2;
 
     //fighting cycle that repeats to not allow you to proceed until one fighter wins or both run out of hp
     while (hp1 > 0 && hp2 > 0)
     {
-        hp1 = maxHp1;
-        hp2 = maxHp2;
         Console.Clear();
         Console.WriteLine($"Round {round}");
         Console.WriteLine();
@@ -298,6 +304,7 @@ void Fight()
         Console.WriteLine();
         Console.WriteLine("2. Regular Punch");
         Console.WriteLine("Normal damage\n Normal accuracy");
+        Console.WriteLine();
         Console.WriteLine("3. Small Punch");
         Console.WriteLine("Low damage\n High accuracy");
         Console.WriteLine();
@@ -308,8 +315,9 @@ void Fight()
         Console.WriteLine("Increase damage");
         Console.WriteLine();
         Console.WriteLine("Press \"1\", \"2\", \"3\", \"4\" or \"5\" to select a move");
-
         attackChoice = Console.ReadKey().Key;
+
+        Console.Clear();
         //Attack choices
         if (attackChoice == ConsoleKey.D1)
         {
@@ -339,7 +347,7 @@ void Fight()
             }
         }
 
-        if (attackChoice == ConsoleKey.D)
+        if (attackChoice == ConsoleKey.D3)
         {
             damage1 = generator.Next(minDmg1, maxDmg1) - 5;
             doubleRand = generator.NextDouble();
@@ -366,42 +374,15 @@ void Fight()
         }
 
         doubleRand = generator.NextDouble();
-        
-        if(doubleRand <= 0.2)
+
+        if (doubleRand <= 0.2)
         {
-            damage1 = generator.Next(minDmg2, maxDmg2) + 10;
+            damage2 = generator.Next(minDmg2, maxDmg2) + 10;
+            Console.WriteLine($"Big punch {doubleRand}");
             doubleRand = generator.NextDouble();
             if (doubleRand < hitChance2 * 0.75)
             {
-                hp2 -= Math.Round(damage2 * damageModifier2, 0);
-            }
-            else
-            {
-                Console.WriteLine($"{fighter2} missed!");
-            }
-        }
-        
-        if (doubleRand <= 0.4 && doubleRand > 0.4)
-        {
-            damage1 = generator.Next(minDmg2, maxDmg2);
-            doubleRand = generator.NextDouble();
-            if (doubleRand < hitChance2)
-            {
-                hp2 -= Math.Round(damage2 * damageModifier2, 0);
-            }
-            else
-            {
-                Console.WriteLine($"{fighter2} missed!");
-            }
-        }
-        
-        if (doubleRand <= 0.6 && doubleRand > 0.4)
-        {
-            damage1 = generator.Next(minDmg2, maxDmg2) -5;
-            doubleRand = generator.NextDouble();
-            if (doubleRand < hitChance2 * 1.1)
-            {
-                hp2 -= Math.Round(damage2 * damageModifier2, 0);
+                hp1 -= Math.Round(damage2 * damageModifier2, 0);
             }
             else
             {
@@ -409,16 +390,44 @@ void Fight()
             }
         }
 
-        if (doubleRand <= 0.8 && doubleRand > 0.6)
+        else if (doubleRand <= 0.4)
         {
-            hitChance1 += 0.05;
-            Console.WriteLine(hitChance1);
+            damage2 = generator.Next(minDmg2, maxDmg2);
+            Console.WriteLine($"regular punch {doubleRand}");
+            doubleRand = generator.NextDouble();
+            if (doubleRand < hitChance2)
+            {
+                hp1 -= Math.Round(damage2 * damageModifier2, 0);
+            }
+            else
+            {
+                Console.WriteLine($"{fighter2} missed!");
+            }
+        }
+        else if (doubleRand <= 0.6)
+        {
+            damage2 = generator.Next(minDmg2, maxDmg2) - 5;
+            Console.WriteLine($"Small punch {doubleRand}");
+            doubleRand = generator.NextDouble();
+            if (doubleRand < hitChance2 * 1.1)
+            {
+                hp1 -= Math.Round(damage2 * damageModifier2, 0);
+            }
+            else
+            {
+                Console.WriteLine($"{fighter2} missed!");
+            }
+        }
+        else if (doubleRand <= 0.8)
+        {
+            hitChance2 += 0.05;
+            Console.WriteLine(hitChance2);
         }
 
         if (doubleRand > 0.8)
         {
-            damageModifier1 += 0.5;
-            Console.WriteLine(damageModifier1);
+            damageModifier2 += 0.5;
+            Console.WriteLine(damageModifier2);
         }
 
         if (hp1 < 0)
@@ -435,8 +444,10 @@ void Fight()
         Thread.Sleep(TimeSpan.FromSeconds(1));
         Console.WriteLine($"{fighter2} has {hp2}hp remaining");
 
-
-        Thread.Sleep(TimeSpan.FromSeconds(3));
+        Console.WriteLine(doubleRand);
+        Console.WriteLine(damage2);
+        Console.ReadLine();
+        //Thread.Sleep(TimeSpan.FromSeconds(3));
     }
 
 
@@ -479,6 +490,4 @@ void Fight()
 
     hitChance1 = baseHitChance;
     damageModifier1 = 1;
-    hp1 = maxHp1;
-    hp2 = maxHp2;
 }
