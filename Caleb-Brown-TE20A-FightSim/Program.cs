@@ -6,12 +6,14 @@ using System.Threading;
 string fighter1 = "", fighter2 = "e";
 int round = 1;
 int maxRound = 5;
-int maxHp1 = 100, maxHp2 = 100;
-int damage1 = 0, damage2 = 0;
-int minDmg1 = 10, minDmg2 = 10, maxDmg1 = 25, maxDmg2 = 25;
+int maxHp = 100;
+int damage = 0, damage2 = 0;
+
+int minDmg = 10, maxDmg = 25;
 int nameChoice1 = 0, nameChoice2 = 0, nameChoice3 = 0;
 int random = 0;
 int wager = 0;
+int wins = 0;
 bool simStart = false, gameStart = true;
 bool intInput = false;
 double hp1 = 100, hp2 = 100;
@@ -20,8 +22,8 @@ double hpUpgrades = 1, dmgUpgrades = 1, accuracyUpgrades = 1;
 double hpCost = 100, dmgCost = 100, accuracyCost = 100;
 double doubleRand = 0f;
 double damageModifier1 = 1, damageModifier2 = 1;
-double hitChance1 = 0.75f, hitChance2 = 0.75f;
-double baseHitChance = hitChance1;
+double accuracy = 0.75f, hitChance2 = 0.75f;
+double baseHitChance = accuracy;
 double priceMultiplier = 1.1f;
 double baseCost = 100;
 ConsoleKey chooseFighter = ConsoleKey.E;
@@ -34,6 +36,27 @@ Random generator = new Random();
 
 string[] names = File.ReadAllLines(@"names.txt");
 
+string[] eStats = File.ReadAllLines(@"stats.txt");
+
+Enemy currentEnemy = new Enemy();
+Enemy e1 = new Enemy();
+Enemy e2 = new Enemy();
+Enemy e3 = new Enemy();
+
+int enemyRndNum = generator.Next(1, eStats.Length);
+string enemyStats = eStats[enemyRndNum];
+
+string[] enemyStatsSplit = enemyStats.Split(';');
+
+int.TryParse(enemyStatsSplit[0], out e1.hp);
+int.TryParse(enemyStatsSplit[1], out e1.minDamage);
+int.TryParse(enemyStatsSplit[2], out e1.maxDamage);
+double.TryParse(enemyStatsSplit[3], out e1.accuracy);
+
+
+
+
+
 Console.WriteLine("Hello and welcome to this epic and awesome battle simulator");
 Console.WriteLine("You will partake in 5 different battles where you can wager for or against your fighter");
 Console.WriteLine("After each round you can improve your fighter with the money you've accumulated");
@@ -43,6 +66,10 @@ Console.ReadLine();
 Console.Clear();
 
 nextRound:
+
+
+
+
 while (gameStart == true && round <= 5)
 {
     Start();
@@ -51,6 +78,14 @@ while (gameStart == true && round <= 5)
 while (simStart == true)
 {
     Fight();
+
+    bool win = Fight();
+
+    if (win == true)
+    {
+        wins++;
+    }
+
     goto nextRound;
 }
 
@@ -83,6 +118,7 @@ if (round > maxRound)
 
 void Start()
 {
+    bool inputCheck = false;
 
 
     //Lets the player choose their characters name within certain parameters
@@ -90,12 +126,19 @@ void Start()
     {
         Console.Clear();
         Console.WriteLine("Choose your figher's name");
+        if (inputCheck == true && fighter1 == "")
+        {
+            Console.WriteLine("Your fighter's name cannot be blank");
+        }
         if (fighter1.Length > 16)
         {
             Console.WriteLine("Your fighter's name cannot be longer than 16 characters");
         }
         fighter1 = Console.ReadLine();
+        inputCheck = true;
     }
+
+
 
 
     //generates random names to pick for opponent
@@ -123,16 +166,19 @@ void Start()
         if (chooseFighter == ConsoleKey.D1)
         {
             fighter2 = names[nameChoice1];
+            currentEnemy = e1;
         }
 
         if (chooseFighter == ConsoleKey.D2)
         {
             fighter2 = names[nameChoice2];
+            currentEnemy = e2;
         }
 
         if (chooseFighter == ConsoleKey.D3)
         {
             fighter2 = names[nameChoice3];
+            currentEnemy = e3;
         }
     }
 
@@ -148,21 +194,28 @@ void Start()
         {
             Console.WriteLine($"You can now upgrade {fighter1}");
             Console.WriteLine("Press \"1\", \"2\", \"3\" or ENTER to continue");
+
             hpCost = baseCost;
             priceMultiplier = 1.1f;
             hpCost *= Math.Pow(priceMultiplier, hpUpgrades);
             hpCost = Math.Round(hpCost, 0);
+
             Console.WriteLine($"1. Health {hpCost}");
+
             hpCost = baseCost;
             priceMultiplier = 1.1f;
             dmgCost *= Math.Pow(priceMultiplier, dmgUpgrades);
             dmgCost = Math.Round(dmgCost, 0);
+
             Console.WriteLine($"2. Damage {dmgCost}");
+
             hpCost = baseCost;
             priceMultiplier = 1.1f;
             accuracyCost *= Math.Pow(priceMultiplier, accuracyUpgrades);
             accuracyCost = Math.Round(accuracyCost, 0);
+
             Console.WriteLine($"3. Accuracy {accuracyCost}");
+            Console.WriteLine();
             Console.WriteLine($"You have ${money} remaining");
 
             upgradeChoice = Console.ReadKey().Key;
@@ -170,7 +223,7 @@ void Start()
             if (upgradeChoice == ConsoleKey.D1)
             {
                 money -= hpCost;
-                maxHp1 += 50;
+                maxHp += 50;
                 hpUpgrades += 1;
                 goto upgradeStart;
             }
@@ -178,8 +231,8 @@ void Start()
             if (upgradeChoice == ConsoleKey.D2)
             {
                 money -= dmgCost;
-                minDmg1 += 5;
-                maxDmg1 += 5;
+                minDmg += 5;
+                maxDmg += 5;
                 dmgUpgrades += 1;
                 goto upgradeStart;
             }
@@ -187,8 +240,8 @@ void Start()
             if (upgradeChoice == ConsoleKey.D3)
             {
                 money -= accuracyCost;
-                hitChance1 += 0.05;
-                baseHitChance = hitChance1;
+                accuracy += 0.05;
+                baseHitChance = accuracy;
                 accuracyUpgrades += 1;
                 goto upgradeStart;
             }
@@ -199,37 +252,37 @@ void Start()
         //hp
         if (random >= 0 && random < 5)
         {
-            maxHp2 += 25;
+            currentEnemy.hp += 25;
         }
 
         if (random >= 5 && random < 10)
         {
-            maxHp2 += 50;
+            currentEnemy.hp += 50;
         }
 
         if (random == 10)
         {
-            maxHp2 += 75;
+            currentEnemy.hp += 75;
         }
 
         random = generator.Next(0, 11);
         //damage
         if (random >= 0 && random < 5)
         {
-            minDmg2 += 1;
-            maxDmg2 += 1;
+            currentEnemy.minDamage += 1;
+            currentEnemy.maxDamage += 1;
         }
 
         if (random >= 5 && random < 10)
         {
-            minDmg2 += 5;
-            maxDmg2 += 5;
+            currentEnemy.minDamage += 5;
+            currentEnemy.maxDamage += 5;
         }
 
         if (random == 10)
         {
-            minDmg2 += 10;
-            maxDmg2 += 10;
+            currentEnemy.minDamage += 10;
+            currentEnemy.maxDamage += 10;
         }
     }
 
@@ -284,10 +337,13 @@ void Start()
     simStart = true;
 }
 
-void Fight()
+bool Fight()
 {
-    hp1 = maxHp1;
-    hp2 = maxHp2;
+    bool win;
+    bool broke = false;
+
+    hp1 = maxHp;
+    hp2 = currentEnemy.hp;
 
     //fighting cycle that repeats to not allow you to proceed until one fighter wins or both run out of hp
     while (hp1 > 0 && hp2 > 0)
@@ -321,11 +377,11 @@ void Fight()
         //Attack choices
         if (attackChoice == ConsoleKey.D1)
         {
-            damage1 = generator.Next(minDmg1, maxDmg1) + 10;
+            damage = generator.Next(minDmg, maxDmg) + 10;
             doubleRand = generator.NextDouble();
-            if (doubleRand < hitChance1 * 0.75)
+            if (doubleRand < accuracy * 0.75)
             {
-                hp2 -= Math.Round(damage1 * damageModifier1, 0);
+                hp2 -= Math.Round(damage * damageModifier1, 0);
             }
             else
             {
@@ -335,11 +391,11 @@ void Fight()
 
         if (attackChoice == ConsoleKey.D2)
         {
-            damage1 = generator.Next(minDmg1, maxDmg1);
+            damage = generator.Next(minDmg, maxDmg);
             doubleRand = generator.NextDouble();
-            if (doubleRand < hitChance1)
+            if (doubleRand < accuracy)
             {
-                hp2 -= Math.Round(damage1 * damageModifier1, 0);
+                hp2 -= Math.Round(damage * damageModifier1, 0);
             }
             else
             {
@@ -349,11 +405,11 @@ void Fight()
 
         if (attackChoice == ConsoleKey.D3)
         {
-            damage1 = generator.Next(minDmg1, maxDmg1) - 5;
+            damage = generator.Next(minDmg, maxDmg) - 5;
             doubleRand = generator.NextDouble();
-            if (doubleRand < hitChance1 * 1.1)
+            if (doubleRand < accuracy * 1.1)
             {
-                hp2 -= Math.Round(damage1 * damageModifier1, 0);
+                hp2 -= Math.Round(damage * damageModifier1, 0);
             }
             else
             {
@@ -363,8 +419,8 @@ void Fight()
 
         if (attackChoice == ConsoleKey.D4)
         {
-            hitChance1 += 0.05;
-            Console.WriteLine(hitChance1);
+            accuracy += 0.05;
+            Console.WriteLine(accuracy);
         }
 
         if (attackChoice == ConsoleKey.D5)
@@ -377,7 +433,7 @@ void Fight()
 
         if (doubleRand <= 0.2)
         {
-            damage2 = generator.Next(minDmg2, maxDmg2) + 10;
+            damage2 = generator.Next(currentEnemy.minDamage, currentEnemy.maxDamage) + 10;
             Console.WriteLine($"Big punch {doubleRand}");
             doubleRand = generator.NextDouble();
             if (doubleRand < hitChance2 * 0.75)
@@ -392,7 +448,7 @@ void Fight()
 
         else if (doubleRand <= 0.4)
         {
-            damage2 = generator.Next(minDmg2, maxDmg2);
+            damage2 = generator.Next(currentEnemy.minDamage, currentEnemy.maxDamage);
             Console.WriteLine($"regular punch {doubleRand}");
             doubleRand = generator.NextDouble();
             if (doubleRand < hitChance2)
@@ -406,7 +462,7 @@ void Fight()
         }
         else if (doubleRand <= 0.6)
         {
-            damage2 = generator.Next(minDmg2, maxDmg2) - 5;
+            damage2 = generator.Next(currentEnemy.minDamage, currentEnemy.maxDamage) - 5;
             Console.WriteLine($"Small punch {doubleRand}");
             doubleRand = generator.NextDouble();
             if (doubleRand < hitChance2 * 1.1)
@@ -459,6 +515,7 @@ void Fight()
         Console.WriteLine("Both fighters were knocked unconcious");
         Console.ReadLine();
         money += wager;
+        win = false;
     }
 
     //Fighter 2 wins
@@ -467,6 +524,7 @@ void Fight()
         Console.WriteLine($"{fighter1} down");
         Console.WriteLine($"{fighter2} wins!");
         Console.ReadLine();
+        win = false;
     }
 
     //Fighter 1 wins
@@ -476,6 +534,16 @@ void Fight()
         Console.WriteLine($"{fighter1} wins");
         Console.ReadLine();
         money += wager * 2;
+        win = true;
+    }
+
+    else
+    {
+        Console.WriteLine("Somehow you broke the system, well done");
+        Console.WriteLine("Though I will have to reprimand you");
+
+        broke = true;
+        win = false;
     }
 
     if (round < maxRound)
@@ -483,11 +551,18 @@ void Fight()
         Console.WriteLine("Next round will start once you pick your next opponent");
         Console.ReadLine();
     }
+
+    if (broke == true)
+    {
+
+    }
+
     round++;
     gameStart = true;
     simStart = false;
 
 
-    hitChance1 = baseHitChance;
+    accuracy = baseHitChance;
     damageModifier1 = 1;
+    return win;
 }
