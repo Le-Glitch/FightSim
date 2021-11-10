@@ -1,6 +1,6 @@
 using System;
 
-public class Enemy
+public class Player
 {
     public string name;
     public int maxHp;

@@ -1,5 +1,5 @@
-hp;min damage;max damage;accuracy
-100;10;25;0.75
+name;hp;min damage;max damage;accuracy
+Zombie;100;10;25;0.75
 150;5;15;0.8
 125;10;30;0.6
 75;15;30;0.69
