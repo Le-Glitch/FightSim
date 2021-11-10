@@ -8,5 +8,6 @@ public class Player
     public int damage;
     public int minDamage;
     public int maxDamage;
+    public double damageModifier;
     public double accuracy;
 }
